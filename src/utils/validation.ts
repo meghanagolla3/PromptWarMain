@@ -54,3 +54,61 @@ export function validateRange(value: number, min: number, max: number): boolean 
 export function validateArrayLength<T>(array: T[], min: number, max: number): boolean {
   return array.length >= min && array.length <= max;
 }
+
+// Behavior analysis validation schema
+export const behaviorAnalysisSchema = z.object({
+  checkInId: z.string().min(1),
+  behaviorSummary: z.string().min(1).max(1000),
+  emotionalAnalysis: z.string().min(1).max(1000),
+  triggerAnalysis: z.string().min(1).max(1000),
+  confidenceScore: z.number().min(0).max(10),
+  reasoning: z.string().min(1).max(1000),
+});
+
+// Risk prediction validation schema
+export const riskPredictionSchema = z.object({
+  checkInId: z.string().min(1),
+  riskLevel: z.enum(['low', 'medium', 'high']),
+  factors: z.array(z.object({
+    factor: z.string().min(1),
+    impact: z.enum(['positive', 'negative', 'neutral']),
+    weight: z.number().min(0).max(1),
+  })),
+  confidence: z.number().min(0).max(100),
+  reasoning: z.string().min(1).max(1000),
+});
+
+// Coaching plan validation schema
+export const coachingPlanSchema = z.object({
+  checkInId: z.string().min(1),
+  motivationalMessage: z.string().min(1).max(1000),
+  reasoning: z.string().min(1).max(1000),
+  personalizedSuggestion: z.string().min(1).max(1000),
+  replacementActivity: z.object({
+    activity: z.string().min(1),
+    duration: z.string().min(1),
+    reason: z.string().min(1),
+  }),
+  microGoal: z.object({
+    goal: z.string().min(1),
+    achievable: z.boolean(),
+    timeframe: z.string().min(1),
+  }),
+  reflectionQuestion: z.string().min(1).max(500),
+});
+
+// Nudge validation schema
+export const nudgeSchema = z.object({
+  userId: z.string().min(1),
+  message: z.string().min(1).max(500),
+  context: z.string().max(500).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  timing: z.string().optional(),
+});
+
+// Nudge update validation schema
+export const nudgeUpdateSchema = z.object({
+  id: z.string().min(1),
+  delivered: z.boolean().optional(),
+  responded: z.boolean().optional(),
+});

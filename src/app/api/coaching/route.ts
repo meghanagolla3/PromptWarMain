@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { coachingPlanSchema } from '@/utils/validation';
 
 // POST save coaching plan
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { checkInId, motivationalMessage, reasoning, personalizedSuggestion, replacementActivity, microGoal, reflectionQuestion } = body;
+
+    const validation = coachingPlanSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const { checkInId, motivationalMessage, reasoning, personalizedSuggestion, replacementActivity, microGoal, reflectionQuestion } = validation.data;
 
     const coaching = await prisma.coachingPlan.create({
       data: {

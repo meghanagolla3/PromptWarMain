@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { nudgeSchema, nudgeUpdateSchema } from '@/utils/validation';
 
 // GET nudges for a user
 export async function GET(request: NextRequest) {
@@ -20,15 +21,19 @@ export async function GET(request: NextRequest) {
 }
 
 // POST create a new nudge
-// Note: Prisma client types will update after running `npx prisma generate`
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, message, context, priority, timing } = body;
 
-    if (!userId || !message) {
-      return NextResponse.json({ error: 'userId and message are required' }, { status: 400 });
+    const validation = nudgeSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+
+    const { userId, message, context, priority, timing } = validation.data;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const nudge = await (prisma.smartNudge.create as any)({
@@ -51,11 +56,16 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, delivered, responded } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: 'id is required' }, { status: 400 });
+    const validation = nudgeUpdateSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+
+    const { id, delivered, responded } = validation.data;
 
     const nudge = await prisma.smartNudge.update({
       where: { id },

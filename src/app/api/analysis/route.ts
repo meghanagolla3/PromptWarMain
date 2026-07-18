@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { behaviorAnalysisSchema } from '@/utils/validation';
 
 // POST save behavior analysis
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { checkInId, behaviorSummary, emotionalAnalysis, triggerAnalysis, confidenceScore, reasoning } = body;
+
+    const validation = behaviorAnalysisSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const { checkInId, behaviorSummary, emotionalAnalysis, triggerAnalysis, confidenceScore, reasoning } = validation.data;
 
     const analysis = await prisma.behaviorAnalysis.create({
       data: {

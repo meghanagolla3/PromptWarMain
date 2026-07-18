@@ -5,7 +5,7 @@ let genAI: GoogleGenerativeAI | null = null;
 
 export function getGeminiClient(): GoogleGenerativeAI {
   if (!genAI) {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey === 'your_gemini_api_key_here') {
       throw new Error('Gemini API key is not configured');
     }
@@ -15,7 +15,7 @@ export function getGeminiClient(): GoogleGenerativeAI {
 }
 
 export function isApiKeyConfigured(): boolean {
-  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   return !!apiKey && apiKey !== 'your_gemini_api_key_here';
 }
 

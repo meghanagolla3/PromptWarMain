@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { riskPredictionSchema } from '@/utils/validation';
 
 // POST save risk prediction
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { checkInId, riskLevel, factors, confidence, reasoning } = body;
+
+    const validation = riskPredictionSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const { checkInId, riskLevel, factors, confidence, reasoning } = validation.data;
 
     const risk = await prisma.riskPrediction.create({
       data: {
