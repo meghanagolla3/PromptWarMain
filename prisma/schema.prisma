@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id             String   @id @default(uuid())
+  name           String
+  habit          String
+  goal           String
+  coachingStyle  String
+  ageGroup       String?
+  occupation     String?
+  createdAt      DateTime @default(now())
+  checkIns       DailyCheckIn[]
+  progress       Progress?
+  onboardingComplete Boolean @default(false)
+}
+
+model DailyCheckIn {
+  id             String   @id @default(uuid())
+  userId         String
+  user           UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date           DateTime
+  mood           String
+  stressLevel    Int
+  sleepQuality   Int
+  energyLevel    Int
+  currentUrge    Int
+  location       String
+  triggers       String   // JSON string array for SQLite compatibility
+  reflection     String?
+  completedGoal  Boolean  @default(false)
+  
+  behaviorAnalysis BehaviorAnalysis?
+  riskPrediction  RiskPrediction?
+  coachingPlan    CoachingPlan?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model BehaviorAnalysis {
+  id                String   @id @default(uuid())
+  checkInId         String   @unique
+  checkIn           DailyCheckIn @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  behaviorSummary   String
+  emotionalAnalysis String
+  triggerAnalysis   String
+  confidenceScore   Int
+  reasoning         String
+  timestamp         DateTime @default(now())
+}
+
+model RiskPrediction {
+  id         String   @id @default(uuid())
+  checkInId  String   @unique
+  checkIn    DailyCheckIn @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  riskLevel  String
+  factors    Json
+  confidence Int
+  reasoning  String
+  timestamp  DateTime @default(now())
+}
+
+model CoachingPlan {
+  id                   String   @id @default(uuid())
+  checkInId            String   @unique
+  checkIn              DailyCheckIn @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  motivationalMessage  String
+  reasoning            String
+  personalizedSuggestion String
+  replacementActivity  Json
+  microGoal            Json
+  reflectionQuestion   String
+  timestamp            DateTime @default(now())
+}
+
+model Progress {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak    Int      @default(0)
+  longestStreak    Int      @default(0)
+  totalCheckIns    Int      @default(0)
+  successfulDays   Int      @default(0)
+  moodTrend        Json     @default("[]")
+  riskTrend        Json     @default("[]")
+  habitFrequency   Json     @default("[]")
+  achievements     Json     @default("[]")
+  weeklyReflections Json    @default("[]")
+  lastUpdated      DateTime @default(now())
+}
+
+model AIInsight {
+  id          String   @id @default(uuid())
+  userId      String
+  pattern     String
+  explanation String
+  actionable  String
+  timestamp   DateTime @default(now())
+}
+
+model SmartNudge {
+  id          String   @id @default(uuid())
+  userId      String
+  message     String
+  context     String
+  priority    String
+  delivered   Boolean  @default(false)
+  responded   Boolean  @default(false)
+  timestamp   DateTime @default(now())
+}
